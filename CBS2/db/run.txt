@@ -1,0 +1,12 @@
+-- CBS2
+
+db2 -tvmf 0000_backup.sql          |tee cbs_CBS2_0000_backup.sql.log
+db2 -tvmf 00_backup.sql          |tee cbs_CBS2_00_backup.sql.log
+db2 -tvmf 01_table.sql          |tee cbs_CBS2_01_table.sql.log
+db2 -tvmf 02_params.sql          |tee cbs_CBS2_02_params.sql.log
+db2 -tvmf 0301_other_update.sql          |tee cbs_CBS2_0301_other_update.sql.log
+db2 -tvmf 030201_other_update.sql          |tee cbs_CBS2_030201_other_update.sql.log
+db2 -tvmf 0302_other_update.sql          |tee cbs_CBS2_0302_other_update.sql.log
+db2 -tvmf 04_recover.sql          |tee cbs_CBS2_04_recover.sql.log
+db2 -tvmf 07_end.sql          |tee cbs_CBS2_07_end.sql.log
+db2 -tvmf 08.sql          |tee cbs_CBS2_08.sql.log
