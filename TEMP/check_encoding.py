@@ -91,7 +91,7 @@ class Script_Check:
             with open('run.txt','w',newline = '') as f:
                 f.write('-- ' + self.version + '\n\n')
                 for i in range(len(self.run_list)):
-                    if self.run_list[i] == '02_params_xml.sql' or self.run_list[i] == '0001_rollbak.sql':
+                    if self.run_list[i] == '02_params_xml.sql' or self.run_list[i].find('rollbak')!= -1:
                         continue
                     else:
                         f.write('db2 -tvmf ' + self.run_list[i] + '          |tee cbs_' + self.version + '_' + self.run_list[i] + '.log\n')
