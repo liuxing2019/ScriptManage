@@ -148,5 +148,7 @@ if __name__ == "__main__":
                 sm.dev_upg()
             elif func_id == 3:
                 sm.st_xml()
+            else:
+                pass
     except Exception as e:
         print('ERROR:执行失败!')
