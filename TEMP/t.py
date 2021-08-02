@@ -1,3 +1,2 @@
-flag = input()
-if flag == '1':
-    print('yes')
+import os
+os.system('mkdir dev')

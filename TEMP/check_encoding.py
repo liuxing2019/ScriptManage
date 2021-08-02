@@ -1,22 +1,27 @@
 import os
-import sys
-import time
 import chardet
 
 
-class Script_Check:
-    def __init__(self, dir):
+class ScriptManage:
+    def __init__(self):
+        pass
+
+    def input_valid(self,dir):
         self.check_path = os.path.join('..', dir)
-        print(self.check_path)
         self.run_list = []
         self.version = dir
         # 校验输入
-        if not os.path.isdir(self.check_path):
-            print('ERROR:没有此目录，请检查本地仓库是否更新！\n')
-            return None
+        if dir == '0':
+            return 0
+        elif not os.path.isdir(self.check_path):
+            print('ERROR:没有此目录，请检查本地代码是否更新！\n')
+            return 1
+        else:
+            print(self.check_path)
+            return 2
 
     # 检查文件编码是否为gbk
-    def check_coding(self, file):
+    def check_encoding(self, file):
         with open(file, 'rb') as f:
             data = f.read()
             if chardet.detect(data)['encoding'] == 'GB2312':
@@ -27,25 +32,22 @@ class Script_Check:
     # 重写非gbk编码的sql
     def rewrite_file(self, file):
         try:
-            print(file + ' 编码格式有误，正在转换...')
             content = self.read_file(file)
             os.remove(file)
             with open(file, 'w', encoding='GB2312') as f:
                 f.write(content)
         except Exception as e:
-            print(file + '转换失败！')
+            print(file + ' GB2312转换失败！')
         else:
-            print(file + '转换成功！')
+            print(file + ' GB2312')
 
     # 读取非gbk编码的sql内容
     def read_file(self, file):
         with open(file, 'r', encoding='utf-8') as f:
             return f.read()
 
-    # dos2unix
     def dos2unix(self, file):
         try:
-            print(file + ' dos2unix转换中...')
             if not os.path.isfile(file):
                 print('ERROR: %s invalid normal file' % file)
                 return -1
@@ -53,30 +55,15 @@ class Script_Check:
             with open(file, 'r', encoding='gbk', newline='') as fd:
                 lines = fd.read()
                 lines = lines.replace('\r\n', '\n')
-                tmpfile = open(file+'_tmp', 'w', newline='')
+                tmpfile = open(file + '_tmp', 'w', newline='')
                 tmpfile.write(lines)
                 tmpfile.close()
             os.remove(file)
-            os.rename(file+'_tmp', file)
+            os.rename(file + '_tmp', file)
         except Exception as e:
-            print(file + ' dos2unix转换失败！')
+            print(file + ' UNIX(LF)转换失败！')
         else:
-            print(file + ' dos2unix转换成功！\n')
-
-    # 生成02_params_xml.sql
-    '''def gensql(self):
-        try:
-            if os.path.isfile('02_params_xml.sql'):
-                os.remove('02_params_xml.sql')
-            with open('02_params.sql','r',newline = '') as f:
-                content = f.read()
-                content = content.replace('IMPORT FROM \'','IMPORT FROM \'SQL/DB2/')
-                new_sql = open('02_params_xml.sql','w',newline = '')
-                new_sql.write(content)
-                new_sql.close()
-            print('生成02_params_xml成功！\n')
-        except Exception as e:
-            print('ERROR:生成02_params_xml失败！')'''
+            print(file + ' UNIX(LF)\n')
 
     # 生成run.txt
     def genrun(self):
@@ -90,38 +77,36 @@ class Script_Check:
                         continue
                     else:
                         f.write(
-                            'db2 -tvmf ' + self.run_list[i] + '          |tee cbs_' + self.version + '_' + self.run_list[i] + '.log\n')
+                            'db2 -tvmf ' + self.run_list[i] + '          |tee cbs_' + self.version + '_' +
+                            self.run_list[i] + '.log\n')
         except Exception as e:
             print('ERROR:run.txt生成失败！')
         else:
-            # time.sleep(0.2)
             print('run.txt生成成功！内容如下：\n')
-            # time.sleep(0.2)
         with open('run.txt', 'r') as f:
             content = f.read()
         print(content)
 
-    def main(self):
+    def format_main(self):
         os.chdir(self.check_path)
         for i in os.listdir():
             if os.path.isdir('%s' % i):
                 self.check_path = os.path.join('.', i)
-                self.main()
-                # 只操作最里层目录
+                self.format_main()
+                # 不只操作最里层目录
                 # os.chdir('..')
             elif os.path.splitext(i)[-1] == '.sql':
-                # time.sleep(0.1)
                 self.run_list.append(i)
-                if not self.check_coding(i):
+                if not self.check_encoding(i):
                     self.rewrite_file(i)
                 else:
-                    print(i + ' 编码格式正确')
+                    print(i + ' GB2312')
                 self.dos2unix(i)
             else:
                 pass
 
     def func_select(self):
-        print('请输入序号选择功能')
+        print('请输入序号选择功能【1/2/3】')
         print('【1】脚本格式转换\n【2】开发环境升级\n【3】测试环境xml生成')
         while True:
             flag = input()
@@ -134,22 +119,34 @@ class Script_Check:
             else:
                 print('ERROR:输入出错，或者没有该选项! 请重新输入!')
 
-
     def dev_upg(self):
         os.system('mkdir dev_upg')
 
+    def st_xml(self):
+        pass
+
 if __name__ == "__main__":
     origin_path = os.getcwd()
-    sc = Script_Check(dir)
+    sm = ScriptManage()
     try:
-        if(sc.func_select() == 1):
-            while True:
-                print('----输入要转换的脚本目录----(例：CBS7.7.10)')
-                dir = input()
-                sc.main()
-                sc.genrun()
-                os.chdir(origin_path)
-        elif(sc.func_select() == 2):
-            sc.dev_upg()
+        while True:
+            func_id = sm.func_select()
+            if func_id == 1:
+                while True:
+                    print('----请输入脚本目录(例：CBS7.7.10)--(输0返回上一级)')
+                    dir = input()
+                    input_stat = sm.input_valid(dir)
+                    if not input_stat:
+                        break
+                    elif input_stat == 1:
+                        continue
+                    else:
+                        sm.format_main()
+                        sm.genrun()
+                        os.chdir(origin_path)
+            elif func_id == 2:
+                sm.dev_upg()
+            elif func_id == 3:
+                sm.st_xml()
     except Exception as e:
         print('ERROR:执行失败!')
