@@ -5,8 +5,8 @@ import chardet
 
 
 class Script_Check:
-    def __init__(self,dir):
-        self.check_path = os.path.join('..',dir)
+    def __init__(self, dir):
+        self.check_path = os.path.join('..', dir)
         print(self.check_path)
         self.run_list = []
         self.version = dir
@@ -14,50 +14,46 @@ class Script_Check:
         if not os.path.isdir(self.check_path):
             print('ERROR:没有此目录，请检查本地仓库是否更新！\n')
             return None
-        
 
     # 检查文件编码是否为gbk
-    def check_coding(self,file):
-        with open(file,'rb') as f:
+    def check_coding(self, file):
+        with open(file, 'rb') as f:
             data = f.read()
             if chardet.detect(data)['encoding'] == 'GB2312':
                 return True
             else:
                 return False
 
-
     # 重写非gbk编码的sql
-    def rewrite_file(self,file):
+    def rewrite_file(self, file):
         try:
             print(file + ' 编码格式有误，正在转换...')
             content = self.read_file(file)
             os.remove(file)
-            with open(file,'w',encoding='GB2312') as f:
+            with open(file, 'w', encoding='GB2312') as f:
                 f.write(content)
         except Exception as e:
             print(file + '转换失败！')
         else:
             print(file + '转换成功！')
 
-
     # 读取非gbk编码的sql内容
-    def read_file(self,file):
-        with open(file,'r',encoding = 'utf-8') as f:
+    def read_file(self, file):
+        with open(file, 'r', encoding='utf-8') as f:
             return f.read()
 
-
     # dos2unix
-    def dos2unix(self,file):
+    def dos2unix(self, file):
         try:
             print(file + ' dos2unix转换中...')
             if not os.path.isfile(file):
                 print('ERROR: %s invalid normal file' % file)
                 return -1
             # newline这个参数是为了防止python自动把\r\n转\n
-            with open(file, 'r',encoding = 'gbk',newline = '') as fd:
+            with open(file, 'r', encoding='gbk', newline='') as fd:
                 lines = fd.read()
-                lines = lines.replace('\r\n','\n')
-                tmpfile = open(file+'_tmp', 'w',newline = '')
+                lines = lines.replace('\r\n', '\n')
+                tmpfile = open(file+'_tmp', 'w', newline='')
                 tmpfile.write(lines)
                 tmpfile.close()
             os.remove(file)
@@ -66,9 +62,9 @@ class Script_Check:
             print(file + ' dos2unix转换失败！')
         else:
             print(file + ' dos2unix转换成功！\n')
-    
+
     # 生成02_params_xml.sql
-    def gensql(self):
+    '''def gensql(self):
         try:
             if os.path.isfile('02_params_xml.sql'):
                 os.remove('02_params_xml.sql')
@@ -80,42 +76,41 @@ class Script_Check:
                 new_sql.close()
             print('生成02_params_xml成功！\n')
         except Exception as e:
-            print('ERROR:生成02_params_xml失败！')
-
+            print('ERROR:生成02_params_xml失败！')'''
 
     # 生成run.txt
     def genrun(self):
         if os.path.isfile('run.txt'):
             os.remove('run.txt')
         try:
-            with open('run.txt','w',newline = '') as f:
+            with open('run.txt', 'w', newline='') as f:
                 f.write('-- ' + self.version + '\n\n')
                 for i in range(len(self.run_list)):
-                    if self.run_list[i] == '02_params_xml.sql' or self.run_list[i].find('rollbak')!= -1:
+                    if self.run_list[i] == '02_params_xml.sql' or self.run_list[i].find('rollbak') != -1:
                         continue
                     else:
-                        f.write('db2 -tvmf ' + self.run_list[i] + '          |tee cbs_' + self.version + '_' + self.run_list[i] + '.log\n')
+                        f.write(
+                            'db2 -tvmf ' + self.run_list[i] + '          |tee cbs_' + self.version + '_' + self.run_list[i] + '.log\n')
         except Exception as e:
             print('ERROR:run.txt生成失败！')
         else:
-            time.sleep(1)
+            # time.sleep(0.2)
             print('run.txt生成成功！内容如下：\n')
-            time.sleep(1)
-        with open('run.txt','r') as f:
+            # time.sleep(0.2)
+        with open('run.txt', 'r') as f:
             content = f.read()
         print(content)
-
 
     def main(self):
         os.chdir(self.check_path)
         for i in os.listdir():
-            if os.path.isdir('%s' %i):
-                self.check_path = os.path.join('.',i)
+            if os.path.isdir('%s' % i):
+                self.check_path = os.path.join('.', i)
                 self.main()
                 # 只操作最里层目录
                 # os.chdir('..')
             elif os.path.splitext(i)[-1] == '.sql':
-                time.sleep(0.3)
+                # time.sleep(0.1)
                 self.run_list.append(i)
                 if not self.check_coding(i):
                     self.rewrite_file(i)
@@ -125,17 +120,36 @@ class Script_Check:
             else:
                 pass
 
+    def func_select(self):
+        print('请输入序号选择功能')
+        print('【1】脚本格式转换\n【2】开发环境升级\n【3】测试环境xml生成')
+        while True:
+            flag = input()
+            if flag == '1':
+                return 1
+            elif flag == '2':
+                return 2
+            elif flag == '3':
+                return 3
+            else:
+                print('ERROR:输入出错，或者没有该选项! 请重新输入!')
+
+
+    def dev_upg(self):
+        os.system('mkdir dev_upg')
 
 if __name__ == "__main__":
     origin_path = os.getcwd()
-    while True:
-        print('----输入要转换的目录名----(例：CBS7.7.10)')
-        dir = input()
-        sc = Script_Check(dir)
-        try:
-            sc.main()
-            sc.genrun()
-            #sc.gensql()
-            os.chdir(origin_path)
-        except Exception as e:
-            print('ERROR:执行失败!')
+    sc = Script_Check(dir)
+    try:
+        if(sc.func_select() == 1):
+            while True:
+                print('----输入要转换的脚本目录----(例：CBS7.7.10)')
+                dir = input()
+                sc.main()
+                sc.genrun()
+                os.chdir(origin_path)
+        elif(sc.func_select() == 2):
+            sc.dev_upg()
+    except Exception as e:
+        print('ERROR:执行失败!')
