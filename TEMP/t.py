@@ -1,2 +1,2 @@
 import os
-os.system('mkdir dev')
+os.system('rd DEV_UPG /s/q')

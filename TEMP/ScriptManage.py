@@ -1,5 +1,6 @@
 import os
 import chardet
+import shutil
 
 
 class ScriptManage:
@@ -93,8 +94,6 @@ class ScriptManage:
             if os.path.isdir('%s' % i):
                 self.check_path = os.path.join('.', i)
                 self.format_main()
-                # 不只操作最里层目录
-                # os.chdir('..')
             elif os.path.splitext(i)[-1] == '.sql':
                 self.run_list.append(i)
                 if not self.check_encoding(i):
@@ -110,17 +109,24 @@ class ScriptManage:
         print('【1】脚本格式转换\n【2】开发环境升级\n【3】测试环境xml生成')
         while True:
             flag = input()
-            if flag == '1':
-                return 1
-            elif flag == '2':
-                return 2
-            elif flag == '3':
-                return 3
-            else:
-                print('ERROR:输入出错，或者没有该选项! 请重新输入!')
+            if flag == '1':return 1
+            elif flag == '2':return 2
+            elif flag == '3':return 3
+            else:print('ERROR:输入出错，或者没有该选项! 请重新输入!')
 
     def dev_upg(self):
-        os.system('mkdir dev_upg')
+        os.system('rd DEV_UPG /s/q')
+        #os.system('mkdir DEV_UPG')
+        for line in open('list.txt'):
+             if self.input_valid(line) == 2:
+                 try:
+                    shutil.copytree(self.check_path,'DEV_UPG',ignore=None)
+                 except Exception as e:
+                     print(e)
+                 #os.system('xcopy %s DEV_UPG /s/q' %(self.check_path))
+             else:
+                 print('ERROR:请检查list.txt!')
+                 break
 
     def st_xml(self):
         pass
@@ -133,7 +139,7 @@ if __name__ == "__main__":
             func_id = sm.func_select()
             if func_id == 1:
                 while True:
-                    print('----请输入脚本目录(例：CBS7.7.10)--(输0返回上一级)')
+                    print('----请输入脚本目录(例：CBS7.8.10)--(输0返回上一级)')
                     dir = input()
                     input_stat = sm.input_valid(dir)
                     if not input_stat:
