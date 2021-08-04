@@ -137,7 +137,7 @@ class ScriptManage:
                 content = content.replace('db_pwd',db_pwd)
             with open('connect.bat','w') as f:
                 f.write(content)
-            os.system('db2cmd call connect.bat')
+            # os.system('db2cmd call connect.bat')
 
             # 复制各项目脚本目录到WORKSPACE
             for line in open(list_file):
@@ -145,7 +145,7 @@ class ScriptManage:
                 if self.input_valid(line) == 2:
                     shutil.copytree(os.path.join(
                         self.check_path, 'DB\\SQL\\DB2'), line)
-                    self.genbat(os.path.join(line,'run.txt'))
+                    self.genbat(os.path.join(line,'run.txt'),db_no,db_pwd)
                     os.system('db2cmd call run.bat')
                 else:
                     print('ERROR:请检查list.txt!')
