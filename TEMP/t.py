@@ -1,2 +1,4 @@
-import os
-os.system('rd DEV_UPG /s/q')
+with open('list.txt','r') as f:
+    content = f.read()
+    content = content[content.find('\n'):]
+    print(content)

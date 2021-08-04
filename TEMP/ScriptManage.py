@@ -7,8 +7,8 @@ class ScriptManage:
     def __init__(self):
         pass
 
-    def input_valid(self,dir):
-        self.check_path = os.path.join('..', dir)
+    def input_valid(self, dir):
+        self.check_path = os.path.abspath(os.path.join(root_path, dir))
         self.run_list = []
         self.version = dir
         # 校验输入
@@ -109,30 +109,68 @@ class ScriptManage:
         print('【1】脚本格式转换\n【2】开发环境升级\n【3】测试环境xml生成')
         while True:
             flag = input()
-            if flag == '1':return 1
-            elif flag == '2':return 2
-            elif flag == '3':return 3
-            else:print('ERROR:输入出错，或者没有该选项! 请重新输入!')
+            if flag == '1':
+                return 1
+            elif flag == '2':
+                return 2
+            elif flag == '3':
+                return 3
+            else:
+                print('ERROR:输入出错，或者没有该选项! 请重新输入!')
 
     def dev_upg(self):
-        os.system('rd DEV_UPG /s/q')
-        #os.system('mkdir DEV_UPG')
-        for line in open('list.txt'):
-             if self.input_valid(line) == 2:
-                 try:
-                    shutil.copytree(self.check_path,'DEV_UPG',ignore=None)
-                 except Exception as e:
-                     print(e)
-                 #os.system('xcopy %s DEV_UPG /s/q' %(self.check_path))
-             else:
-                 print('ERROR:请检查list.txt!')
-                 break
+        try:
+            list_file = os.path.abspath('list.txt')
+            os.system('rd WORKSPACE /s/q')
+            os.system('mkdir WORKSPACE')
+            os.chdir('WORKSPACE')
+
+            # 连接数据库
+            os.system('copy ..\\sql.bat .\\')
+            print('请输入要连接的数据库名(本地别名)：')
+            db_no = input()
+            print('请输入数据库密码：')
+            db_pwd = input()
+            with open('sql.bat','r') as f:
+                content = f.read()
+                content = content.replace('db_no',db_no)
+                content = content.replace('db_pwd',db_pwd)
+            with open('connect.bat','w') as f:
+                f.write(content)
+            os.system('db2cmd call connect.bat')
+
+            # 复制各项目脚本目录到WORKSPACE
+            for line in open(list_file):
+                line = line.strip('\n')
+                if self.input_valid(line) == 2:
+                    shutil.copytree(os.path.join(
+                        self.check_path, 'DB\\SQL\\DB2'), line)
+                    self.genbat(os.path.join(line,'run.txt'))
+                    os.system('db2cmd call run.bat')
+                else:
+                    print('ERROR:请检查list.txt!')
+                    break
+            
+        except Exception as e:
+            print(e)
+
+    def genbat(self, file):
+        with open(file, 'r') as f:
+            content = f.read()
+            content = content.replace('|tee', '>>')
+            content = content[content.find('\n'):]
+        with open('run.bat','w') as f:
+            f.write(content)
 
     def st_xml(self):
         pass
 
+
 if __name__ == "__main__":
+    # 该脚本存放目录
     origin_path = os.getcwd()
+    # 代码库根目录
+    root_path = os.path.join(origin_path, '..')
     sm = ScriptManage()
     try:
         while True:
