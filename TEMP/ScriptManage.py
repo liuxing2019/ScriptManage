@@ -121,44 +121,53 @@ class ScriptManage:
     def dev_upg(self):
         try:
             list_file = os.path.abspath('list.txt')
-            os.system('rd WORKSPACE /s/q')
+            if os.path.exists('WORKSPACE'):
+                os.system('rd WORKSPACE /s/q')
             os.system('mkdir WORKSPACE')
             os.chdir('WORKSPACE')
 
-            print('请输入要连接的数据库名(本地别名)：')
+            print('请输入要升级的数据库名(本地别名)：')
             db_no = input()
             print('请输入数据库密码：')
             db_pwd = input()
 
-            # 复制各项目脚本目录到WORKSPACE
+            # 复制各项目脚本目录到WORKSPACE，修改run.bat,执行脚本
             for line in open(list_file):
+                print(
+                    '=================================================================================')
                 line = line.strip('\n')
                 if self.input_valid(line) == 2:
                     shutil.copytree(os.path.join(
                         self.check_path, 'DB\\SQL\\DB2'), line)
-                    self.genbat(os.path.join(line,'run.txt'),db_no,db_pwd)
-                    os.system('cd %s' %line)
+                    os.chdir(line)
+                    self.genbat('run.txt', db_no, db_pwd)
                     os.system('db2cmd call run.bat')
+                    os.chdir('..')
                 else:
                     print('ERROR:请检查list.txt!')
                     break
-            
+            # 回到TEMP目录
+            os.chdir(origin_path)
         except Exception as e:
             print(e)
+            return None
 
-    def genbat(self, file,db_no,db_pwd):
+    def genbat(self, file, db_no, db_pwd):
         with open(file, 'r') as f:
             content = f.read()
             content = content.replace('|tee', '>>')
             content = content[content.find('\n'):]
-            connect_info = 'db2 connect to %s user fmquery using %s\n' %(db_no,db_pwd)
+            connect_info = 'db2 connect to %s user fmquery using %s\n' % (
+                db_no, db_pwd)
             content = connect_info+content
             print(file+' 要执行的命令如下：')
             print(content)
-        with open('run.bat','w') as f:
+            print('请确认后输入任意字符回车继续！')
+            continue_info = input()
+        with open('run.bat', 'w') as f:
             f.write(content)
 
-    def st_xml(self):
+    def gen_xml(self):
         pass
 
 
