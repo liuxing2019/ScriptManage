@@ -125,19 +125,10 @@ class ScriptManage:
             os.system('mkdir WORKSPACE')
             os.chdir('WORKSPACE')
 
-            # 连接数据库
-            os.system('copy ..\\sql.bat .\\')
             print('请输入要连接的数据库名(本地别名)：')
             db_no = input()
             print('请输入数据库密码：')
             db_pwd = input()
-            with open('sql.bat','r') as f:
-                content = f.read()
-                content = content.replace('db_no',db_no)
-                content = content.replace('db_pwd',db_pwd)
-            with open('connect.bat','w') as f:
-                f.write(content)
-            # os.system('db2cmd call connect.bat')
 
             # 复制各项目脚本目录到WORKSPACE
             for line in open(list_file):
@@ -146,6 +137,7 @@ class ScriptManage:
                     shutil.copytree(os.path.join(
                         self.check_path, 'DB\\SQL\\DB2'), line)
                     self.genbat(os.path.join(line,'run.txt'),db_no,db_pwd)
+                    os.system('cd %s' %line)
                     os.system('db2cmd call run.bat')
                 else:
                     print('ERROR:请检查list.txt!')
@@ -154,11 +146,15 @@ class ScriptManage:
         except Exception as e:
             print(e)
 
-    def genbat(self, file):
+    def genbat(self, file,db_no,db_pwd):
         with open(file, 'r') as f:
             content = f.read()
             content = content.replace('|tee', '>>')
             content = content[content.find('\n'):]
+            connect_info = 'db2 connect to %s user fmquery using %s\n' %(db_no,db_pwd)
+            content = connect_info+content
+            print(file+' 要执行的命令如下：')
+            print(content)
         with open('run.bat','w') as f:
             f.write(content)
 
