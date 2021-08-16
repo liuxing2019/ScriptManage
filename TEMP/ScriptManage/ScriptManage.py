@@ -1,6 +1,7 @@
 import os
 import chardet
 import shutil
+from switches import *
 
 
 class ScriptManage:
@@ -141,7 +142,7 @@ class ScriptManage:
                         self.check_path, 'DB\\SQL\\DB2'), line)
                     os.chdir(line)
                     self.genbat('run.txt', db_no, db_pwd)
-                    os.system('db2cmd call run.bat')
+                    cmd = os.system('db2cmd call run.bat')
                     os.chdir('..')
                 else:
                     print('ERROR:请检查list.txt!')
@@ -162,8 +163,9 @@ class ScriptManage:
             content = connect_info+content
             print(file+' 要执行的命令如下：')
             print(content)
-            print('请确认后输入任意字符回车继续！')
-            continue_info = input()
+            if (exec_after_confirm == "Y"):
+                print('请确认后输入任意字符回车继续！')
+                continue_info = input()
         with open('run.bat', 'w') as f:
             f.write(content)
 
