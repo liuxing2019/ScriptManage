@@ -1,6 +1,7 @@
 import os
 import chardet
 import shutil
+import subprocess
 from switches import *
 
 
@@ -143,6 +144,8 @@ class ScriptManage:
                     os.chdir(line)
                     self.genbat('run.txt', db_no, db_pwd)
                     cmd = os.system('db2cmd call run.bat')
+                    subp = subprocess.Popen(cmd,shell=True)
+                    subp.wait()
                     os.chdir('..')
                 else:
                     print('ERROR:请检查list.txt!')
@@ -163,7 +166,7 @@ class ScriptManage:
             content = connect_info+content
             print(file+' 要执行的命令如下：')
             print(content)
-            if (exec_after_confirm == "Y"):
+            if (EXEC_AFTER_CONFIRM == "Y"):
                 print('请确认后输入任意字符回车继续！')
                 continue_info = input()
         with open('run.bat', 'w') as f:
@@ -177,7 +180,7 @@ if __name__ == "__main__":
     # 该脚本存放目录
     origin_path = os.getcwd()
     # 代码库根目录
-    root_path = os.path.join(origin_path, '..')
+    root_path = os.path.join(origin_path, '../..')
     sm = ScriptManage()
     try:
         while True:

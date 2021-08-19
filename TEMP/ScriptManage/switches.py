@@ -1,4 +1,4 @@
 '''
 this file is used to define functional switches
 '''
-exec_after_confirm = "N"
+EXEC_AFTER_CONFIRM = "N"
