@@ -136,7 +136,7 @@ class ScriptManage:
             # 复制各项目脚本目录到WORKSPACE，修改run.bat,执行脚本
             for line in open(list_file):
                 print(
-                    '=================================================================================')
+                    '===================================================================================')
                 line = line.strip('\n')
                 if self.input_valid(line) == 2:
                     shutil.copytree(os.path.join(
@@ -144,8 +144,11 @@ class ScriptManage:
                     os.chdir(line)
                     self.genbat('run.txt', db_no, db_pwd)
                     cmd = os.system('db2cmd call run.bat')
-                    subp = subprocess.Popen(cmd,shell=True)
-                    subp.wait()
+                    try:
+                        subp = subprocess.Popen(cmd, shell=True)
+                        subp.wait()
+                    except Exception as e:
+                        print(e)
                     os.chdir('..')
                 else:
                     print('ERROR:请检查list.txt!')
@@ -163,10 +166,11 @@ class ScriptManage:
             content = content[content.find('\n'):]
             connect_info = 'db2 connect to %s user fmquery using %s\n' % (
                 db_no, db_pwd)
-            content = connect_info+content
-            print(file+' 要执行的命令如下：')
+            content = connect_info + content
+            print(file + ' 要执行的命令如下：')
             print(content)
-            if (EXEC_AFTER_CONFIRM == "Y"):
+            # 参数为N时不用确认就继续执行
+            if EXEC_AFTER_CONFIRM == "Y":
                 print('请确认后输入任意字符回车继续！')
                 continue_info = input()
         with open('run.bat', 'w') as f:
