@@ -143,12 +143,10 @@ class ScriptManage:
                         self.check_path, 'DB\\SQL\\DB2'), line)
                     os.chdir(line)
                     self.genbat('run.txt', db_no, db_pwd)
-                    cmd = os.system('db2cmd call run.bat')
-                    try:
-                        subp = subprocess.Popen(cmd, shell=True)
+                    cmd = 'db2cmd call run.bat'
+                    for c in open('run.bat'):
+                        subp = subprocess.Popen(c, shell=True)
                         subp.wait()
-                    except Exception as e:
-                        print(e)
                     os.chdir('..')
                 else:
                     print('ERROR:请检查list.txt!')
