@@ -143,7 +143,6 @@ class ScriptManage:
                         self.check_path, 'DB\\SQL\\DB2'), line)
                     os.chdir(line)
                     self.genbat('run.txt', db_no, db_pwd)
-                    cmd = 'db2cmd call run.bat'
                     for c in open('run.bat'):
                         subp = subprocess.Popen(c, shell=True)
                         subp.wait()
@@ -189,7 +188,7 @@ if __name__ == "__main__":
             func_id = sm.func_select()
             if func_id == 1:
                 while True:
-                    print('----请输入脚本目录(例：CBS7.8.10)--(输0返回上一级)')
+                    print('----请输入脚本目录(例：CBS7.8.10)--(输0返回上级菜单)')
                     dir = input()
                     input_stat = sm.input_valid(dir)
                     if not input_stat:
