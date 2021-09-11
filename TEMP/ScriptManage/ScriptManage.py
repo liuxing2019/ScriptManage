@@ -144,6 +144,7 @@ class ScriptManage:
                     os.chdir(line)
                     self.genbat('run.txt', db_no, db_pwd)
                     for c in open('run.bat'):
+                        # cmd = 'db2cmd call %s' % c
                         subp = subprocess.Popen(c, shell=True)
                         subp.wait()
                     os.chdir('..')
