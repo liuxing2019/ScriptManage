@@ -1,8 +1,6 @@
 import os
 import chardet
 import shutil
-import subprocess
-from switches import *
 
 
 class ScriptManage:
@@ -108,15 +106,13 @@ class ScriptManage:
 
     def func_select(self):
         print('请输入序号选择功能【1/2/3】')
-        print('【1】脚本格式转换\n【2】开发环境升级\n【3】测试环境xml生成')
+        print('【1】脚本格式转换\n【2】环境升级\n')
         while True:
             flag = input()
             if flag == '1':
                 return 1
             elif flag == '2':
                 return 2
-            elif flag == '3':
-                return 3
             else:
                 print('ERROR:输入出错，或者没有该选项! 请重新输入!')
 
@@ -130,23 +126,22 @@ class ScriptManage:
 
             print('请输入要升级的数据库名(本地别名)：')
             db_no = input()
+            print('请输入用户名：')
+            db_user = input()
             print('请输入数据库密码：')
             db_pwd = input()
 
             # 复制各项目脚本目录到WORKSPACE，修改run.bat,执行脚本
             for line in open(list_file):
                 print(
-                    '===================================================================================')
+                    '=================================================================================')
                 line = line.strip('\n')
                 if self.input_valid(line) == 2:
                     shutil.copytree(os.path.join(
                         self.check_path, 'DB\\SQL\\DB2'), line)
                     os.chdir(line)
-                    self.genbat('run.txt', db_no, db_pwd)
-                    for c in open('run.bat'):
-                        # cmd = 'db2cmd call %s' % c
-                        subp = subprocess.Popen(c, shell=True)
-                        subp.wait()
+                    self.genbat('run.txt', db_no, db_user, db_pwd)
+                    os.system('db2cmd call run.bat')
                     os.chdir('..')
                 else:
                     print('ERROR:请检查list.txt!')
@@ -157,20 +152,18 @@ class ScriptManage:
             print(e)
             return None
 
-    def genbat(self, file, db_no, db_pwd):
+    def genbat(self, file, db_no, db_user, db_pwd):
         with open(file, 'r') as f:
             content = f.read()
             content = content.replace('|tee', '>>')
             content = content[content.find('\n'):]
-            connect_info = 'db2 connect to %s user fmquery using %s\n' % (
-                db_no, db_pwd)
-            content = connect_info + content
-            print(file + ' 要执行的命令如下：')
+            connect_info = 'db2 connect to %s user %s using %s\n' % (
+                db_no,db_user,db_pwd)
+            content = connect_info+content
+            print(file+' 要执行的命令如下：')
             print(content)
-            # 参数为N时不用确认就继续执行
-            if EXEC_AFTER_CONFIRM == "Y":
-                print('请确认后输入任意字符回车继续！')
-                continue_info = input()
+            print('请确认后输入任意字符回车继续！')
+            continue_info = input()
         with open('run.bat', 'w') as f:
             f.write(content)
 
@@ -182,14 +175,14 @@ if __name__ == "__main__":
     # 该脚本存放目录
     origin_path = os.getcwd()
     # 代码库根目录
-    root_path = os.path.join(origin_path, '../..')
+    root_path = os.path.join(origin_path, '..')
     sm = ScriptManage()
     try:
         while True:
             func_id = sm.func_select()
             if func_id == 1:
                 while True:
-                    print('----请输入脚本目录(例：CBS7.8.10)--(输0返回上级菜单)')
+                    print('----请输入脚本目录(例：CBS7.8.10)--(输0返回上一级)')
                     dir = input()
                     input_stat = sm.input_valid(dir)
                     if not input_stat:
@@ -202,8 +195,6 @@ if __name__ == "__main__":
                         os.chdir(origin_path)
             elif func_id == 2:
                 sm.dev_upg()
-            elif func_id == 3:
-                sm.st_xml()
             else:
                 pass
     except Exception as e:
