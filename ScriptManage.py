@@ -126,13 +126,24 @@ class ScriptManage:
 
             print('请输入要升级的数据库名(本地别名)：')
             db_no = input()
-            print('请输入用户名：')
+            print('请输入用户名(fmquery/fmdbrun)：')
             db_user = input()
             print('请输入数据库密码：')
             db_pwd = input()
 
-            # 复制各项目脚本目录到WORKSPACE，修改run.bat,执行脚本
+            # 复制所有脚本目录到WORKSPACE
             for line in open(list_file):
+                line = line.strip('\n')
+                list_all = []
+                list_all.append(line)
+                if self.input_valid(line) == 2:
+                    shutil.copytree(os.path.join(
+                        self.check_path, 'DB\\SQL\\DB2'), line)
+            # 生成一个总的run.bat
+            self.genbat(list_all)
+
+            # 复制各项目脚本目录到WORKSPACE，修改run.bat,执行脚本
+            '''for line in open(list_file):
                 print(
                     '=================================================================================')
                 line = line.strip('\n')
@@ -145,7 +156,7 @@ class ScriptManage:
                     os.chdir('..')
                 else:
                     print('ERROR:请检查list.txt!')
-                    break
+                    break'''
             # 回到TEMP目录
             os.chdir(origin_path)
         except Exception as e:
@@ -162,7 +173,7 @@ class ScriptManage:
             content = connect_info+content
             print(file+' 要执行的命令如下：')
             print(content)
-            print('请确认后输入任意字符回车继续！')
+            print('请确认后输入任意字符回车执行！')
             continue_info = input()
         with open('run.bat', 'w') as f:
             f.write(content)
